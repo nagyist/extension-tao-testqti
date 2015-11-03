@@ -64,8 +64,8 @@ define([
          * @param {Array} [config.items] - an optional list of menu items
          * @param {String} [config.content] - an optional content to place just after the button
          * @param {String} [config.discard] - an optional CSS selector to discard from the click event
-         * @param {Object} testContext - the complete state of the test
-         * @param {Object} testRunner - the test runner instance
+         * @param {Object} [testContext] - the complete state of the test
+         * @param {Object} [testRunner] - the test runner instance
          * @returns {button}
          */
         init : function init(id, config, testContext, testRunner) {
@@ -75,8 +75,8 @@ define([
             this.config.id = id;
             this.config.is = {};
 
-            this.testContext = testContext;
-            this.testRunner = testRunner;
+            this.testContext = testContext || {};
+            this.testRunner = testRunner || {};
 
             this.setup();
 
