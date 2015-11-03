@@ -90,6 +90,45 @@ define([
         },
 
         /**
+         *
+         * @param {Document} [_document]
+         * @returns {{itemContainerWindow: *, $: *, qtiRunner: (*|qtiRunner), $item: *, context: *}}
+         */
+        getItemContext: function(_document){
+            var doc = _document || document;
+            var itemFrame, itemWindow, itemContainerFrame, itemContainerWindow, item$, qtiRunner, $item, context;
+
+            itemFrame = doc.getElementById('preview-container');
+
+            // test
+            if(!itemFrame) {
+                itemFrame = doc.getElementById('qti-item');
+                itemWindow = itemFrame && itemFrame.contentWindow;
+                itemContainerFrame = itemWindow && itemWindow.document.getElementById('item-container');
+                itemContainerWindow = itemContainerFrame && itemContainerFrame.contentWindow;
+                context = 'test';
+            }
+
+            // preview
+            else {
+                itemContainerWindow = itemFrame && itemFrame.contentWindow;
+                context = 'preview';
+            }
+
+            item$ = itemContainerWindow && itemContainerWindow.$;
+            qtiRunner = itemContainerWindow && itemContainerWindow.qtiRunner;
+            $item = item$ && item$('.qti-item');
+
+            return {
+                itemContainerWindow: itemContainerWindow,
+                $: item$,
+                qtiRunner: qtiRunner,
+                $item: $item,
+                context: context
+            };
+        },
+
+        /**
          * Assumes the right button type is set
          * @private
          */
