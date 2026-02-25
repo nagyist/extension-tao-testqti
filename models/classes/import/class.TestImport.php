@@ -82,13 +82,20 @@ class taoQtiTest_models_classes_import_TestImport implements
             // The zip extraction is a long process that can exceed the 30s timeout
             helpers_TimeOutHelper::setTimeOutLimit(helpers_TimeOutHelper::LONG);
 
+            $formData = is_array($form)
+                ? $form
+                : [
+                    TestImportForm::ITEM_CLASS_DESTINATION_FIELD => $form->getValue(TestImportForm::ITEM_CLASS_DESTINATION_FIELD),
+                    TestImportForm::METADATA_FORM_ELEMENT_NAME => $form->getValue(TestImportForm::METADATA_FORM_ELEMENT_NAME),
+                ];
+
             $report = taoQtiTest_models_classes_QtiTestService::singleton()
                 ->importMultipleTests(
                     $class,
                     $uploadedFile,
                     false,
-                    $form[TestImportForm::ITEM_CLASS_DESTINATION_FIELD] ?? null,
-                    $form
+                    $formData[TestImportForm::ITEM_CLASS_DESTINATION_FIELD] ?? null,
+                    $formData
                 );
 
             helpers_TimeOutHelper::reset();

@@ -64,7 +64,7 @@ class QtiTestConverterTest extends GenerisPhpUnitTestRunner
      * @param string $testPath
      *            the path of the QTI test to convert
      * @param string $expected
-     *            the expected json result
+     *            the expected json result (actual may contain extra keys e.g. observers, serial from qtism)
      */
     public function testToJson($testPath, $expected)
     {
@@ -78,7 +78,27 @@ class QtiTestConverterTest extends GenerisPhpUnitTestRunner
         $converter = new taoQtiTest_models_classes_QtiTestConverter($doc);
         $result = $converter->toJson();
 
-        $this->assertEquals($expected, $result);
+        $expectedArray = json_decode($expected, true);
+        $resultArray = json_decode($result, true);
+        $this->assertNotNull($expectedArray, 'Expected JSON should be valid');
+        $this->assertNotNull($resultArray, 'Converter output should be valid JSON');
+        $this->assertJsonStructureContains($expectedArray, $resultArray, '');
+    }
+
+    /**
+     * Assert that result contains all keys and values from expected (result may have extra keys).
+     */
+    private function assertJsonStructureContains(array $expected, array $result, string $path): void
+    {
+        foreach ($expected as $key => $expectedValue) {
+            $this->assertArrayHasKey($key, $result, "Missing key at {$path}{$key}");
+            $actualValue = $result[$key];
+            if (is_array($expectedValue) && is_array($actualValue)) {
+                $this->assertJsonStructureContains($expectedValue, $actualValue, $path . $key . '.');
+            } else {
+                $this->assertEquals($expectedValue, $actualValue, "Value mismatch at {$path}{$key}");
+            }
+        }
     }
 
     /**

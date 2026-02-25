@@ -144,12 +144,12 @@ class QtiTimeConstraintTest extends GenerisPhpUnitTestRunner
         }
 
         //stub the source to make it return the timelimits and the case values
-        $source = $this->prophesize(SectionPart::class);
-        $source->getTimeLimits()->willReturn($timeLimits);
-        $source->getIdentifier()->willReturn($id);
-        $source->getQtiClassName()->willReturn($type);
+        $source = $this->createMock(SectionPart::class);
+        $source->method('getTimeLimits')->willReturn($timeLimits);
+        $source->method('getIdentifier')->willReturn($id);
+        $source->method('getQtiClassName')->willReturn($type);
 
-        $timeConstraint = new QtiTimeConstraint($source->reveal(), $spent);
+        $timeConstraint = new QtiTimeConstraint($source, $spent);
 
         $encoded = json_encode($timeConstraint);
         $this->assertJson($encoded);

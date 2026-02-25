@@ -30,7 +30,8 @@ class QtiFlysystemFileManagerTest extends GenerisPhpUnitTestRunner
 {
     protected $serviceLocator;
     protected $fileManager;
-    protected $fileSystem;
+    /** @var \League\Flysystem\FilesystemOperator */
+    protected $filesystem;
 
     public function setUp(): void
     {
@@ -66,10 +67,10 @@ class QtiFlysystemFileManagerTest extends GenerisPhpUnitTestRunner
 
         $this->assertInstanceOf(QtiFlysystemFile::class, $file);
         $this->assertEquals('pouet', $file->getData());
-        $this->assertEquals('text/plain', $file->getMimeType());
+        $this->assertContains($file->getMimeType(), ['text/plain', false], 'Mime type may be false if Flysystem does not store it');
         $this->assertTrue($file->hasFilename());
         $this->assertEquals('myfile.txt', $file->getFilename());
-        $this->assertInternalType('resource', $file->getStream());
+        $this->assertIsResource($file->getStream());
     }
 
     /**
