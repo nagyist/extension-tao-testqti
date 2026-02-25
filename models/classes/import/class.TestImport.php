@@ -85,8 +85,12 @@ class taoQtiTest_models_classes_import_TestImport implements
             $formData = is_array($form)
                 ? $form
                 : [
-                    TestImportForm::ITEM_CLASS_DESTINATION_FIELD => $form->getValue(TestImportForm::ITEM_CLASS_DESTINATION_FIELD),
-                    TestImportForm::METADATA_FORM_ELEMENT_NAME => $form->getValue(TestImportForm::METADATA_FORM_ELEMENT_NAME),
+                    TestImportForm::ITEM_CLASS_DESTINATION_FIELD => $form->getValue(
+                        TestImportForm::ITEM_CLASS_DESTINATION_FIELD
+                    ),
+                    TestImportForm::METADATA_FORM_ELEMENT_NAME => $form->getValue(
+                        TestImportForm::METADATA_FORM_ELEMENT_NAME
+                    ),
                 ];
 
             $report = taoQtiTest_models_classes_QtiTestService::singleton()

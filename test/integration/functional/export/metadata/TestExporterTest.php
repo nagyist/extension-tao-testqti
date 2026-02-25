@@ -91,7 +91,8 @@ class TestExporterTest extends GenerisPhpUnitTestRunner
         $expectedLines = array_filter(explode("\n", $expectedNormalized), fn ($l) => $l !== '');
         $actualLines = array_filter(explode("\n", $actualNormalized), fn ($l) => $l !== '');
 
-        $this->assertCount(count($expectedLines), $actualLines, 'CSV should have same number of lines as expected (export format may include extra columns)');
+        $msg = 'CSV should have same number of lines (export format may include extra columns)';
+        $this->assertCount(count($expectedLines), $actualLines, $msg);
 
         $expectedHeader = str_getcsv(array_shift($expectedLines));
         $actualHeader = str_getcsv(array_shift($actualLines));
@@ -105,7 +106,9 @@ class TestExporterTest extends GenerisPhpUnitTestRunner
         $testPartIdxActual = array_search('testPart', $actualHeader);
         $sectionIdxActual = array_search('section', $actualHeader);
 
-        if ($testPartIdx !== false && $sectionIdx !== false && $testPartIdxActual !== false && $sectionIdxActual !== false) {
+        $hasRequiredIndexes = $testPartIdx !== false && $sectionIdx !== false
+            && $testPartIdxActual !== false && $sectionIdxActual !== false;
+        if ($hasRequiredIndexes) {
             foreach ($expectedLines as $i => $expectedRow) {
                 $expectedCells = str_getcsv($expectedRow);
                 $this->assertArrayHasKey($i, $actualLines, "Actual CSV should have data row " . ($i + 1));

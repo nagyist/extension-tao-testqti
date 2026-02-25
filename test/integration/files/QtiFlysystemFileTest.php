@@ -74,7 +74,11 @@ class QtiFlysystemFileTest extends GenerisPhpUnitTestRunner
         $file->setServiceLocator($this->serviceLocator);
 
         $this->assertTrue($file->exists());
-        $this->assertContains($file->getMimeType(), ['text/plain', false], 'Mime type may be false if Flysystem does not store it');
+        $this->assertContains(
+            $file->getMimeType(),
+            ['text/plain', false],
+            'Mime type may be false if Flysystem does not store it'
+        );
         $this->assertTrue($file->hasFilename());
         $this->assertEquals('filename.txt', $file->getFilename());
         $this->assertEquals('text', $file->getData());
