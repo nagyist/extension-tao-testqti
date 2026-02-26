@@ -163,7 +163,7 @@ abstract class AbstractQtiTestExporter extends ItemExporter implements QtiTestEx
     /** Export the test definition and all its dependencies (media, items, ...) into the related ZIP archive. */
     public function export(array $options = []): Report
     {
-        if ($options['manifest']) {
+        if (isset($options['manifest']) && $options['manifest']) {
             $this->setManifest($options['manifest']);
         }
 

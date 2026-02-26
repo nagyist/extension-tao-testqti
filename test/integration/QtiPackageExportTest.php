@@ -21,15 +21,14 @@
 namespace oat\taoQtiTest\test\integration;
 
 use Exception;
+use GuzzleHttp\Psr7\ServerRequest;
+use GuzzleHttp\Psr7\Uri;
+use GuzzleHttp\Psr7\Utils;
 use oat\generis\model\data\ModelManager;
 use oat\generis\model\data\Ontology;
 use oat\oatbox\service\ServiceManager;
 use oat\tao\test\integration\RestTestRunner;
 use oat\taoQtiTest\helpers\QtiPackageExporter;
-use Slim\Http\Headers;
-use Slim\Http\Request;
-use Slim\Http\RequestBody;
-use Slim\Http\Uri;
 use tao_helpers_File;
 use taoQtiTest_actions_RestQtiTests;
 use taoQtiTest_models_classes_QtiTestService as QtiTestService;
@@ -54,6 +53,16 @@ class QtiPackageExportTest extends RestTestRunner
         ]);
     }
 
+    private function createRequest(string $query): ServerRequest
+    {
+        $queryString = ltrim($query, '?');
+        $uri = (new Uri('http://localhost'))->withQuery($queryString);
+        parse_str($queryString, $queryParams);
+
+        return (new ServerRequest(self::GET_REQUEST, $uri, [], Utils::streamFor('')))
+            ->withQueryParams($queryParams);
+    }
+
     public function testWithEmptyStringInParameterQuery()
     {
 
@@ -62,9 +71,7 @@ class QtiPackageExportTest extends RestTestRunner
 
         //Preparing right url
         $query = sprintf('?testUri=');
-        $stream = new RequestBody();
-        $headers = new Headers();
-        $request = new Request(self::GET_REQUEST, Uri::createFromString($query), $headers, [], [], $stream);
+        $request = $this->createRequest($query);
         $restQtiTests->setRequest($request);
 
         $response = $restQtiTests->exportQtiPackage();
@@ -84,9 +91,7 @@ class QtiPackageExportTest extends RestTestRunner
 
         //Preparing right url
         $query = sprintf('?testUri=%s', 'http://this-does-not-matter-really');
-        $stream = new RequestBody();
-        $headers = new Headers();
-        $request = new Request(self::GET_REQUEST, Uri::createFromString($query), $headers, [], [], $stream);
+        $request = $this->createRequest($query);
         $restQtiTests->setRequest($request);
 
         $response = $restQtiTests->exportQtiPackage();
@@ -102,9 +107,7 @@ class QtiPackageExportTest extends RestTestRunner
 
         //Preparing right url
         $query = sprintf('?test=%s', 'http://this-does-not-matter-really');
-        $stream = new RequestBody();
-        $headers = new Headers();
-        $request = new Request(self::GET_REQUEST, Uri::createFromString($query), $headers, [], [], $stream);
+        $request = $this->createRequest($query);
         $restQtiTests->setRequest($request);
 
         $response = $restQtiTests->exportQtiPackage();
@@ -144,9 +147,7 @@ class QtiPackageExportTest extends RestTestRunner
         $restQtiTests->setServiceLocator($this->serviceLocatorMock);
 
         //Preparing right url
-        $stream = new RequestBody();
-        $headers = new Headers();
-        $request = new Request(self::GET_REQUEST, Uri::createFromString($query), $headers, [], [], $stream);
+        $request = $this->createRequest($query);
         $restQtiTests->setRequest($request);
 
         //Execute
@@ -204,9 +205,7 @@ class QtiPackageExportTest extends RestTestRunner
         $restQtiTests->setServiceLocator($this->serviceLocatorMock);
 
         //Preparing right url
-        $stream = new RequestBody();
-        $headers = new Headers();
-        $request = new Request(self::GET_REQUEST, Uri::createFromString($query), $headers, [], [], $stream);
+        $request = $this->createRequest($query);
         $restQtiTests->setRequest($request);
 
         //Execute
