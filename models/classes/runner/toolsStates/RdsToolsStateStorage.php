@@ -78,7 +78,7 @@ class RdsToolsStateStorage extends ToolsStateStorage
             ->setParameter('delivery_execution_id', $deliveryExecutionId)
             ->setParameter('tool_name', $toolName);
 
-        return $qb->execute() !== 0;
+        return $qb->executeStatement() !== 0;
     }
 
     /**
@@ -124,7 +124,7 @@ class RdsToolsStateStorage extends ToolsStateStorage
 
         $returnValue = [];
 
-        foreach ($qb->execute()->fetchAll() as $variable) {
+        foreach ($qb->executeQuery()->fetchAllAssociative() as $variable) {
             $returnValue[$variable[self::COLUMN_TOOL_NAME]] = $variable[self::COLUMN_TOOL_STATE];
         }
 
@@ -142,7 +142,7 @@ class RdsToolsStateStorage extends ToolsStateStorage
             ->delete(self::TABLE_NAME)
             ->where(self::COLUMN_DELIVERY_EXECUTION_ID . ' = :delivery_execution_id')
             ->setParameter('delivery_execution_id', $deliveryExecutionId)
-            ->execute();
+            ->executeStatement();
 
         return true;
     }

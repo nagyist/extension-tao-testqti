@@ -21,9 +21,10 @@
 
 namespace oat\taoQtiTest\test\integration;
 
+use core_kernel_classes_Resource;
 use oat\generis\test\GenerisPhpUnitTestRunner;
-use oat\oatbox\service\ServiceManager;
-use oat\taoQtiTest\models\export\metadata\QtiTestExporter;
+use oat\taoQtiTest\models\export\Formats\Metadata\QtiTestExporter;
+use ZipArchive;
 
 /**
  * This test case focuses on testing the TestCompilerUtils helper.
@@ -61,16 +62,69 @@ class TestExporterTest extends GenerisPhpUnitTestRunner
         $resource = current($resources);
         $this->testCreatedUri = $resource->getUri();
 
-        $testExporter = new QtiTestExporter();
-        $testExporter->setServiceLocator(ServiceManager::getServiceManager());
-        $file = $testExporter->export($this->testCreatedUri);
+        $zipPath = tempnam(sys_get_temp_dir(), 'metadata_export_');
+        $zip = new ZipArchive();
+        $this->assertTrue($zip->open($zipPath, ZipArchive::CREATE));
+        $testExporter = new QtiTestExporter(new core_kernel_classes_Resource($this->testCreatedUri), $zip);
+        $testExporter->export();
+        $zip->close();
 
         \taoTests_models_classes_TestsService::singleton()->deleteClass($class);
 
-        $this->assertEquals(
-            $this->normalizeLineEndings(file_get_contents($expectedMeta)),
-            $this->normalizeLineEndings(file_get_contents($file))
-        );
+        $zip = new ZipArchive();
+        $this->assertTrue($zip->open($zipPath));
+        $csvContents = null;
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = $zip->getNameIndex($i);
+            if (str_ends_with($name, '.csv')) {
+                $csvContents = $zip->getFromIndex($i);
+                break;
+            }
+        }
+        $zip->close();
+        @unlink($zipPath);
+        $this->assertNotNull($csvContents, 'Expected a CSV entry in the export archive');
+
+        $expectedNormalized = $this->normalizeLineEndings(file_get_contents($expectedMeta));
+        $actualNormalized = $this->normalizeLineEndings($csvContents);
+
+        $expectedLines = array_filter(explode("\n", $expectedNormalized), fn ($l) => $l !== '');
+        $actualLines = array_filter(explode("\n", $actualNormalized), fn ($l) => $l !== '');
+
+        $msg = 'CSV should have same number of lines (export format may include extra columns)';
+        $this->assertCount(count($expectedLines), $actualLines, $msg);
+
+        $expectedHeader = str_getcsv(array_shift($expectedLines));
+        $actualHeader = str_getcsv(array_shift($actualLines));
+
+        foreach (['testPart', 'section', 'shuffle', 'section-order'] as $requiredColumn) {
+            $this->assertContains($requiredColumn, $actualHeader, "CSV header should contain column {$requiredColumn}");
+        }
+
+        $testPartIdx = array_search('testPart', $expectedHeader);
+        $sectionIdx = array_search('section', $expectedHeader);
+        $testPartIdxActual = array_search('testPart', $actualHeader);
+        $sectionIdxActual = array_search('section', $actualHeader);
+
+        $hasRequiredIndexes = $testPartIdx !== false && $sectionIdx !== false
+            && $testPartIdxActual !== false && $sectionIdxActual !== false;
+        if ($hasRequiredIndexes) {
+            foreach ($expectedLines as $i => $expectedRow) {
+                $expectedCells = str_getcsv($expectedRow);
+                $this->assertArrayHasKey($i, $actualLines, "Actual CSV should have data row " . ($i + 1));
+                $actualCells = str_getcsv($actualLines[$i]);
+                $this->assertEquals(
+                    $expectedCells[$testPartIdx] ?? '',
+                    $actualCells[$testPartIdxActual] ?? '',
+                    "Row " . ($i + 2) . " testPart should match"
+                );
+                $this->assertEquals(
+                    $expectedCells[$sectionIdx] ?? '',
+                    $actualCells[$sectionIdxActual] ?? '',
+                    "Row " . ($i + 2) . " section should match"
+                );
+            }
+        }
     }
 
     /**

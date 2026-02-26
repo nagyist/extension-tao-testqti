@@ -100,6 +100,29 @@ class QtiTimeLine implements TimeLine, ArraySerializable, \Serializable, \JsonSe
     }
 
     /**
+     * Serialize the object (PHP 8.1+).
+     * @return array
+     */
+    public function __serialize(): array
+    {
+        return ['points' => $this->points];
+    }
+
+    /**
+     * Unserialize the object (PHP 8.1+).
+     * @param array $data
+     * @return void
+     * @throws InvalidDataException
+     */
+    public function __unserialize(array $data): void
+    {
+        $this->points = $data['points'] ?? [];
+        if (!is_array($this->points)) {
+            throw new InvalidDataException('The provided serialized data are invalid!');
+        }
+    }
+
+    /**
      * String representation of object
      * @link http://php.net/manual/en/serializable.serialize.php
      * @return string the string representation of the object or null
